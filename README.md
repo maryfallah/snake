@@ -1,2 +1,2 @@
 # snake
-Snake game with Flutter framework
+Snake game with Flutter framework 🐍
