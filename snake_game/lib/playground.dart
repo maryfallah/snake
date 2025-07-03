@@ -1,4 +1,7 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
+import 'package:snake_game/game/food.dart';
 import 'package:snake_game/game/snake.dart';
 
 class PlayGround extends StatefulWidget {
@@ -12,10 +15,12 @@ class _PlayGroundState extends State<PlayGround> {
   final int squaresPerRow = 30;
   final int squaresPerCol = 60;
   late Snake snake;
+  late Food food;
   @override
   void initState() {
     super.initState();
     snake = Snake();
+    spawnFood(); // create a food not on the snake
   }
 
   @override
@@ -37,11 +42,19 @@ class _PlayGroundState extends State<PlayGround> {
                   itemBuilder: (BuildContext context, int index) {
                     int x = index % squaresPerRow;
                     int y = (index / squaresPerRow).floor();
-                    final isSnake = snake.body.contains(
-                      Offset(x.toDouble(), y.toDouble()),
-                    );
+                    final cell = Offset(x.toDouble(), y.toDouble());
 
-                    var color = isSnake ? Colors.green : Colors.grey[800];
+                    final isSnake = snake.body.contains(cell);
+                    final isFood = cell == food.position;
+
+                    Color color;
+                    if (isSnake) {
+                      color = Colors.green;
+                    } else if (isFood) {
+                      color = Colors.red;
+                    } else {
+                      color = Colors.grey[800]!;
+                    }
                     return Container(
                       margin: const EdgeInsets.all(1),
                       decoration: BoxDecoration(
@@ -57,5 +70,20 @@ class _PlayGroundState extends State<PlayGround> {
         ],
       ),
     );
+  }
+
+  void spawnFood() {
+    final random = Random();
+
+    while (true) {
+      final x = random.nextInt(squaresPerRow);
+      final y = random.nextInt(squaresPerCol);
+      final candidate = Offset(x.toDouble(), y.toDouble());
+
+      if (!snake.body.contains(candidate)) {
+        food = Food(position: candidate);
+        break;
+      }
+    }
   }
 }
