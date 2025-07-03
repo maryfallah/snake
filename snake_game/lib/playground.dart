@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:snake_game/game/snake.dart';
 
 class PlayGround extends StatefulWidget {
   const PlayGround({super.key});
@@ -10,6 +11,12 @@ class PlayGround extends StatefulWidget {
 class _PlayGroundState extends State<PlayGround> {
   final int squaresPerRow = 30;
   final int squaresPerCol = 60;
+  late Snake snake;
+  @override
+  void initState() {
+    super.initState();
+    snake = Snake();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -28,7 +35,13 @@ class _PlayGroundState extends State<PlayGround> {
                   ),
                   itemCount: squaresPerRow * squaresPerCol,
                   itemBuilder: (BuildContext context, int index) {
-                    var color = Colors.grey[800];
+                    int x = index % squaresPerRow;
+                    int y = (index / squaresPerRow).floor();
+                    final isSnake = snake.body.contains(
+                      Offset(x.toDouble(), y.toDouble()),
+                    );
+
+                    var color = isSnake ? Colors.green : Colors.grey[800];
                     return Container(
                       margin: const EdgeInsets.all(1),
                       decoration: BoxDecoration(
