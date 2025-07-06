@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:snake_game/game/direction.dart';
 import 'package:snake_game/game/food.dart';
 import 'package:snake_game/game/snake.dart';
 
@@ -16,6 +17,8 @@ class _PlayGroundState extends State<PlayGround> {
   final int squaresPerCol = 60;
   late Snake snake;
   late Food food;
+  Direction currentDirection = Direction.up;
+
   @override
   void initState() {
     super.initState();
@@ -31,6 +34,33 @@ class _PlayGroundState extends State<PlayGround> {
         children: <Widget>[
           Expanded(
             child: GestureDetector(
+              onVerticalDragUpdate: (details) {
+                if (details.delta.dy < 0 &&
+                    currentDirection != Direction.down) {
+                  setState(() {
+                    currentDirection = Direction.up;
+                  });
+                } else if (details.delta.dy > 0 &&
+                    currentDirection != Direction.up) {
+                  setState(() {
+                    currentDirection = Direction.down;
+                  });
+                }
+              },
+
+              onHorizontalDragUpdate: (details) {
+                if (details.delta.dx < 0 &&
+                    currentDirection != Direction.right) {
+                  setState(() {
+                    currentDirection = Direction.left;
+                  });
+                } else if (details.delta.dx > 0 &&
+                    currentDirection != Direction.left) {
+                  setState(() {
+                    currentDirection = Direction.right;
+                  });
+                }
+              },
               child: AspectRatio(
                 aspectRatio: squaresPerRow / squaresPerCol,
                 child: GridView.builder(
@@ -76,6 +106,7 @@ class _PlayGroundState extends State<PlayGround> {
     final random = Random();
 
     while (true) {
+      //while (true) => Keep trying until we find a valid position not on the snake
       final x = random.nextInt(squaresPerRow);
       final y = random.nextInt(squaresPerCol);
       final candidate = Offset(x.toDouble(), y.toDouble());
