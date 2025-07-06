@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
@@ -13,6 +14,7 @@ class PlayGround extends StatefulWidget {
 }
 
 class _PlayGroundState extends State<PlayGround> {
+  Timer? gameLoop;
   final int squaresPerRow = 30;
   final int squaresPerCol = 60;
   late Snake snake;
@@ -24,6 +26,7 @@ class _PlayGroundState extends State<PlayGround> {
     super.initState();
     snake = Snake();
     spawnFood(); // create a food not on the snake
+    startGame();
   }
 
   @override
@@ -115,6 +118,41 @@ class _PlayGroundState extends State<PlayGround> {
         food = Food(position: candidate);
         break;
       }
+    }
+  }
+
+  void startGame() {
+    gameLoop = Timer.periodic(const Duration(milliseconds: 300), (timer) {
+      setState(() {
+        moveSnake();
+      });
+    });
+  }
+
+  void moveSnake() {
+    final head = snake.body.first;
+    Offset newHead;
+    switch (currentDirection) {
+      case Direction.up:
+        newHead = Offset(head.dx, head.dy - 1);
+        break;
+      case Direction.down:
+        newHead = Offset(head.dx, head.dy + 1);
+        break;
+      case Direction.left:
+        newHead = Offset(head.dx - 1, head.dy);
+        break;
+      case Direction.right:
+        newHead = Offset(head.dx + 1, head.dy);
+        break;
+    }
+    //insert new head
+    snake.body.insert(0, newHead);
+    // Check if food is eaten
+    if (newHead == food.position) {
+      spawnFood(); // grow snake
+    } else {
+      snake.body.removeLast(); // just move forward
     }
   }
 }
