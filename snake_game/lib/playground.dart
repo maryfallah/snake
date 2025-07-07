@@ -15,8 +15,8 @@ class PlayGround extends StatefulWidget {
 
 class _PlayGroundState extends State<PlayGround> {
   Timer? gameLoop;
-  final int squaresPerRow = 30;
-  final int squaresPerCol = 60;
+  final int squaresPerRow = 20;
+  final int squaresPerCol = 30;
   late Snake snake;
   late Food food;
   Direction currentDirection = Direction.up;
@@ -25,7 +25,7 @@ class _PlayGroundState extends State<PlayGround> {
   void initState() {
     super.initState();
     snake = Snake();
-    spawnFood(); // create a food not on the snake
+    spawnFood(squaresPerRow, squaresPerCol); // create a food not on the snake
     startGame();
   }
 
@@ -33,85 +33,96 @@ class _PlayGroundState extends State<PlayGround> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.black,
-      body: Column(
-        children: <Widget>[
-          Expanded(
-            child: GestureDetector(
-              onVerticalDragUpdate: (details) {
-                if (details.delta.dy < 0 &&
-                    currentDirection != Direction.down) {
-                  setState(() {
-                    currentDirection = Direction.up;
-                  });
-                } else if (details.delta.dy > 0 &&
-                    currentDirection != Direction.up) {
-                  setState(() {
-                    currentDirection = Direction.down;
-                  });
-                }
-              },
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          const squareSize = 12.0;
 
-              onHorizontalDragUpdate: (details) {
-                if (details.delta.dx < 0 &&
-                    currentDirection != Direction.right) {
-                  setState(() {
-                    currentDirection = Direction.left;
-                  });
-                } else if (details.delta.dx > 0 &&
-                    currentDirection != Direction.left) {
-                  setState(() {
-                    currentDirection = Direction.right;
-                  });
-                }
-              },
-              child: AspectRatio(
-                aspectRatio: squaresPerRow / squaresPerCol,
-                child: GridView.builder(
-                  physics: NeverScrollableScrollPhysics(),
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: squaresPerRow,
-                  ),
-                  itemCount: squaresPerRow * squaresPerCol,
-                  itemBuilder: (BuildContext context, int index) {
-                    int x = index % squaresPerRow;
-                    int y = (index / squaresPerRow).floor();
-                    final cell = Offset(x.toDouble(), y.toDouble());
+          final width = constraints.maxWidth;
+          final height = constraints.maxHeight;
 
-                    final isSnake = snake.body.contains(cell);
-                    final isFood = cell == food.position;
-
-                    Color color;
-                    if (isSnake) {
-                      color = Colors.green;
-                    } else if (isFood) {
-                      color = Colors.red;
-                    } else {
-                      color = Colors.grey[800]!;
+          final squaresPerRow = (width / squareSize).floor();
+          final squaresPerCol = (height / squareSize).floor();
+          return Column(
+            children: <Widget>[
+              Expanded(
+                child: GestureDetector(
+                  onVerticalDragUpdate: (details) {
+                    if (details.delta.dy < 0 &&
+                        currentDirection != Direction.down) {
+                      setState(() {
+                        currentDirection = Direction.up;
+                      });
+                    } else if (details.delta.dy > 0 &&
+                        currentDirection != Direction.up) {
+                      setState(() {
+                        currentDirection = Direction.down;
+                      });
                     }
-                    return Container(
-                      margin: const EdgeInsets.all(1),
-                      decoration: BoxDecoration(
-                        color: color,
-                        borderRadius: BorderRadius.circular(2),
-                      ),
-                    );
                   },
+
+                  onHorizontalDragUpdate: (details) {
+                    if (details.delta.dx < 0 &&
+                        currentDirection != Direction.right) {
+                      setState(() {
+                        currentDirection = Direction.left;
+                      });
+                    } else if (details.delta.dx > 0 &&
+                        currentDirection != Direction.left) {
+                      setState(() {
+                        currentDirection = Direction.right;
+                      });
+                    }
+                  },
+                  child: AspectRatio(
+                    aspectRatio: squaresPerRow / squaresPerCol,
+                    child: GridView.builder(
+                      physics: NeverScrollableScrollPhysics(),
+                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: squaresPerRow,
+                      ),
+                      itemCount: squaresPerRow * squaresPerCol,
+                      itemBuilder: (BuildContext context, int index) {
+                        int x = index % squaresPerRow;
+                        int y = (index / squaresPerRow).floor();
+                        final cell = Offset(x.toDouble(), y.toDouble());
+
+                        final isSnake = snake.body.contains(cell);
+                        final isFood = cell == food.position;
+
+                        Color color;
+                        if (isSnake) {
+                          color = Colors.green;
+                        } else if (isFood) {
+                          color = Colors.red;
+                        } else {
+                          color = Colors.grey[800]!;
+                        }
+                        return Container(
+                          margin: const EdgeInsets.all(1),
+                          decoration: BoxDecoration(
+                            color: color,
+                            borderRadius: BorderRadius.circular(2),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
                 ),
               ),
-            ),
-          ),
-        ],
+            ],
+          );
+        },
       ),
     );
   }
 
-  void spawnFood() {
+  void spawnFood(int columns, int rows) {
     final random = Random();
 
     while (true) {
       //while (true) => Keep trying until we find a valid position not on the snake
-      final x = random.nextInt(squaresPerRow);
-      final y = random.nextInt(squaresPerCol);
+      final x = random.nextInt(columns);
+      final y = random.nextInt(rows);
       final candidate = Offset(x.toDouble(), y.toDouble());
 
       if (!snake.body.contains(candidate)) {
@@ -155,7 +166,7 @@ class _PlayGroundState extends State<PlayGround> {
     snake.body.insert(0, newHead);
     // Check if food is eaten
     if (newHead == food.position) {
-      spawnFood(); // grow snake
+      spawnFood(squaresPerRow, squaresPerCol); // grow snake
     } else {
       snake.body.removeLast(); // just move forward
     }
