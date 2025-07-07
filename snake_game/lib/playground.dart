@@ -146,6 +146,11 @@ class _PlayGroundState extends State<PlayGround> {
         newHead = Offset(head.dx + 1, head.dy);
         break;
     }
+    if (isGameOver(newHead)) {
+      gameLoop?.cancel();
+      // TODO: show Game Over screen later here
+      return;
+    }
     //insert new head
     snake.body.insert(0, newHead);
     // Check if food is eaten
@@ -154,5 +159,22 @@ class _PlayGroundState extends State<PlayGround> {
     } else {
       snake.body.removeLast(); // just move forward
     }
+  }
+
+  bool isGameOver(Offset newHead) {
+    // Hits wall
+    if (newHead.dx < 0 ||
+        newHead.dx >= squaresPerRow ||
+        newHead.dy < 0 ||
+        newHead.dy >= squaresPerCol) {
+      return true;
+    }
+
+    // Hits itself
+    if (snake.body.contains(newHead)) {
+      return true;
+    }
+
+    return false;
   }
 }
