@@ -15,11 +15,15 @@ class PlayGround extends StatefulWidget {
 
 class _PlayGroundState extends State<PlayGround> {
   Timer? gameLoop;
-  final int squaresPerRow = 20;
-  final int squaresPerCol = 30;
+  int squaresPerRow = 20;
+  int squaresPerCol = 30;
+
   late Snake snake;
-  late Food food;
+  Food? food; // nullable
+
   Direction currentDirection = Direction.up;
+
+  bool isGameOverFlag = false;
 
   @override
   void initState() {
@@ -31,17 +35,18 @@ class _PlayGroundState extends State<PlayGround> {
 
   @override
   Widget build(BuildContext context) {
+    if (food == null && !isGameOverFlag) {
+      spawnFood(squaresPerRow, squaresPerCol);
+    }
+
     return Scaffold(
       backgroundColor: Colors.black,
       body: LayoutBuilder(
         builder: (context, constraints) {
-          const squareSize = 12.0;
+          const squareSize = 16.0;
+          squaresPerRow = (constraints.maxWidth / squareSize).floor();
+          squaresPerCol = (constraints.maxHeight / squareSize).floor();
 
-          final width = constraints.maxWidth;
-          final height = constraints.maxHeight;
-
-          final squaresPerRow = (width / squareSize).floor();
-          final squaresPerCol = (height / squareSize).floor();
           return Column(
             children: <Widget>[
               Expanded(
@@ -87,7 +92,7 @@ class _PlayGroundState extends State<PlayGround> {
                         final cell = Offset(x.toDouble(), y.toDouble());
 
                         final isSnake = snake.body.contains(cell);
-                        final isFood = cell == food.position;
+                        final isFood = cell == food!.position;
 
                         Color color;
                         if (isSnake) {
@@ -159,13 +164,18 @@ class _PlayGroundState extends State<PlayGround> {
     }
     if (isGameOver(newHead)) {
       gameLoop?.cancel();
+      isGameOverFlag = true;
+      print("Game Over!"); //
+      print("Head: ${snake.body.first}");
+      print("Food: ${food!.position}");
+
       // TODO: show Game Over screen later here
       return;
     }
     //insert new head
     snake.body.insert(0, newHead);
     // Check if food is eaten
-    if (newHead == food.position) {
+    if (newHead == food!.position) {
       spawnFood(squaresPerRow, squaresPerCol); // grow snake
     } else {
       snake.body.removeLast(); // just move forward
